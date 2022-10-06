@@ -2,7 +2,7 @@
 
 ## Documentar é preciso
 
-É sempre muito bom quando vamos consumir alguma tecnologia e temos uma documentação vasta, bem escrita e com exemplos, nesse artigo vou descrever como combinar a implementação de documentações com Swagger em APIs que aplicam o versionamento dos seus recursos, dessa forma mantemos nossa fonte de código e documentações sempre juntas, previnindo a necessidade de alterar em dois pontos quando houver a necessidade de evoluir algum recurso. Isso é bom para quem irá consumir nossas APIs e também para nossos colegas de trabalho que poderão com mais facilidade trabalhar e evoluir o que estamos contruindo hoje.
+É sempre muito bom quando vamos consumir alguma tecnologia e temos uma documentação vasta, bem escrita e com exemplos, nesse artigo vou descrever como combinar a implementação de documentações com Swagger em APIs que aplicam o versionamento dos seus recursos, dessa forma mantemos nossa fonte de código e documentações sempre juntas, prevenindo a demanda de alterar em dois pontos quando houver a necessidade de evoluir algum recurso. Isso é bom para quem irá consumir nossas APIs e também para nossos colegas de trabalho que poderão com mais facilidade trabalhar e evoluir o que estamos construindo hoje.
 Existem diversas formas e tutoriais de como realizar essa documentação, uns mais e outros menos completos, sobre o que pode ser feito e aqui irei trazer a forma que eu acho interessante utilizar com exemplos de código e explicações de uma maneira mais direta de cada trecho para ficar fácil seguir junto. O código fonte vai estar disponível em um repositório no final do artigo.
 
 ### Receita do bolo
@@ -11,7 +11,7 @@ Nesse exemplo vou utilizar uma API criada com .NET 6 que já vem com o pacote b�
 
 ![Scaffolding](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc0.png)
 
-Podemos ver que é uma API de exemplo bastante simples com apenas uma entidade e um controller que é o suficiente para detalharmos o que é possível gerar de documentação.
+É possível notar que temos uma API de exemplo bastante simples com apenas uma entidade e um controller que é o suficiente para detalharmos o que é capaz gerar de documentação.
 
 #### Pacotes:
 
@@ -23,24 +23,24 @@ https://github.com/Vinicius-92/swagger-example/blob/main/SwaggerExample/SwaggerE
 
 ## Documentando entidades
 
-O primeiro passo que teremos para documentar nossas APIs é documentar nossas entidades, nesse exemplo estamos tratando direto da entidade de negócio, porém poderia ser um DTO ou qualquer outra classe que utilizamos para entrada ou saída de dados. Ao realizar a documentação com exemplos dessa classe após configurar nosso Swagger isso será exibido na UI e também usada para gerar os exemplos de entrada e retorno.
+O primeiro passo que teremos para documentar nossas APIs é fazer o mesmo com nossas entidades, nesse exemplo estamos tratando direto da entidade de negócio, porém poderia ser um DTO ou qualquer outra classe que utilizamos para entrada ou saída de dados. Ao realizar a documentação com exemplos dessa classe após configurar nosso Swagger isso será exibido na UI e também usada para gerar os exemplos de entrada e retorno.
 
 ![Model](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc1.jpg)
 
 Escolher como nomear qualquer coisa durante o desenvolvimento é sempre um desafio, ser conciso para definir uma parte de nossa aplicação que poderá ser lido diversas pessoas que podem não ter o mesmo contexto que nós sobre o tema, pode causar problemas conforme os projetos vão ficando antigos, maiores e os times vão se renovando.
 Podemos ver no recorte a forma que é possível uma classe ser documentada e seu resultado no swagger gerado, podemos melhorar o entendimento e facilitar o consumo dessa API através das descrições e exemplos, as vezes até encurtando a distância entre idiomas para que conteúdos não sejam perdidos ou mal interpretados durante o processo de tradução e entendimento dos termos.
-Para gerar as linhas acima dos atributos podemos apenas digital três barras e a IDE já disponibiliza a tag XML de summary, podemos adicionar a parte de exemplo para ter mais completa essa definição e temos diversas outras tags possíveis, porém somente com essas duas já temos muita riqueza na documentação.
+Para gerar as linhas acima dos atributos podemos apenas digitar três barras e a IDE já disponibiliza a tag XML de summary, podemos adicionar a parte de exemplo para ter mais completa essa definição e temos diversas outras tags possíveis, porém somente com essas duas já temos muita riqueza na documentação.
 Para que isso seja reconhecido pelo Swagger precisaremos fazer umas configurações adicionais que serão tratadas mais abaixo.
 
 https://github.com/Vinicius-92/swagger-example/blob/main/SwaggerExample/Models/Aluno.cs
 
 ### Configurando o versionamento da API
 
-Adicionar o versionamento em nossa API é bastante simples, poderíamos fazer diretamente na nossa Program.cs, porém por questão de gosto e organização, vamos usar conforme a nossa imagem inicial em uma classe separada dentro de um diretório ApiVersioning que por sua vez está no diretório Config. 
+Adicionar o versionamento em nossa API é bastante simples, poderíamos fazer diretamente na nossa Program.cs, porém, por questão de gosto e organização, vamos usar conforme a nossa imagem inicial em uma classe separada dentro de um diretório ApiVersioning que está no diretório Config. 
 
 ![ApiVersioningExtensions](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc2.png)
 
-Nessa classe iremos extender a IServiceCollection para adicionar as configurações aos serviços gerenciados pela nossa classe Program.cs, essas configurações estão definindo qual é a versão padrão da nossa api, em seguida dizendo para assumir a mesma quando não for especificada pelo consumidor e avisar nas chamadas quais as versões disponíveis para quem esteja recebendo esse retorno.
+Nessa classe iremos estender a IServiceCollection para adicionar as configurações aos serviços gerenciados pela nossa classe Program.cs, essas configurações estão definindo qual é a versão padrão da nossa api, em seguida dizendo para assumir a mesma quando não for especificada pelo consumidor e avisar nas chamadas quais as versões disponíveis para quem esteja recebendo esse retorno.
 Logo abaixo estamos configurando o formato de nosso versionamento para ser a letra 'v' e mais dígitos que possam estar a frente para definir o número.
 
 Fazendo isso, temos que adicionar essa configuração na nossa classe Program através da linha de código abaixo:
@@ -53,8 +53,8 @@ Com isso já poderemos avançar para a configuração do Swagger em nossa aplica
 
 ### Configurando Swagger
 
-Agora chegamos a parte que será a mais extensa de configurações que é a do Swagger para trabalhar junto com o nosso versionamento de forma automática, para que assim sempre que formos adicionando novas versões de nossos controllers não termos trabalhos manuais adicionais que adicionam um ponto de falha em casa de esquecimento ou falta de procedimento padrão.
-Antes de entrarmos diretamente nas classes de configuração temos que adicionar algumas linhas em nossa classe .csproj, que servirão para gerar um arquivo xml das descrição de nossas entidades geradas na primeira parte desse artigo, são elas as 
+Agora chegamos a parte que será a mais extensa de configurações que é a do Swagger para trabalhar com o nosso versionamento de forma automática, para que assim sempre que formos adicionando novas versões de nossos controllers não termos trabalhos manuais adicionais que adicionam um ponto de falha em caso de esquecimento ou falta de procedimento padrão.
+Antes de entrarmos diretamente nas classes de configuração temos que adicionar algumas linhas em nossa classe .csproj, que servirão para gerar um arquivo xml das descrições de nossas entidades geradas na primeira parte desse artigo, são elas as abaixo em amarelo:
 
 ![csproj](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc04.png)
 
@@ -67,7 +67,7 @@ Vamos começar com a ConfigureSwaggerOptions pois precisaremos dessa na seguinte
 
 https://github.com/Vinicius-92/swagger-example/blob/main/SwaggerExample/Config/Swagger/ConfigureSwaggerOptions.cs
 
-Essa classe é bastante longa vamos, como fazia Jack por partes, se compararmos com as que geramos anteriores, porém a maior parte dela é código boilerplate que iremos ver e rever nas aplicações sempre na mesma estrutura. Vamos agora ponto a ponto seguindo a ordem da classe para entender melhor sua construção.
+Essa classe é bastante longa vamos, como fazia Jack, por partes, se compararmos com as que geramos anteriores, porém a maior parte dela é código boilerplate que iremos ver e rever nas aplicações sempre na mesma estrutura. Vamos agora ponto a ponto seguindo a ordem da classe para entender melhor sua construção.
 O primeiro ponto que vemos é que a classe implementa a interface IConfigureNamedOptions do tipo SwaggerGenOptions, através dessa interface ela nos obriga a implementar dois métodos de configuração e através deles construímos a nossa classe.
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc06.png)
 Após isso podemos ver que vamos realizar injetar uma IApiVersionDescriptionProvider através do nosso construtor, ela servirá para que tenhamos disponível de maneira automática todas as versões que temos na nossa API pois nela temos uma lista das mesmas.
@@ -76,7 +76,7 @@ No primeiro método que vemos ele recebe dois parâmetros, não iremos utilizar 
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc07-1.png)
 Logo no início de nosso segundo método temos um laço de repetição que irá adicionar um novo arquivo Swagger para cada versão disponível em nossa API, passando o número da sua versão e chamando nossa função de criar informações sobre o arquivo que temos no final da classe.
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc08.png)
-Em seguida temos a configuração para que o Swagger consiga encontrar os arquivos XML das documentações que fizemos em nossas entidades, junto com as linhas que adicionamos em nosso csproj que completa essa configuração.
+Em seguida temos a configuração para que o Swagger consiga encontrar os arquivos XML das documentações que fizemos em nossas entidades, com as linhas que adicionamos em nosso csproj que completa essa configuração.
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc09.png)
 Ao ligarmos as 'annotations' estamos liberando para que o swagger acesse também outra configuração que faremos diretamente em nossos controllers que irão lidar com o nome dos métodos, status codes e tipos de retornos produzidos.
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc10.png)
@@ -92,13 +92,17 @@ Chegando no fim da nossa configuração do Swagger temos mais uma classe para cr
 
 A primeira configuração que fazemos é bem simples, adicionando aos services de nossa aplicação a SwaggerGen que é padrão e para configurar passamos nossa classe criada no passo acima, o framework toma conta do restante.
 
-O próximo passo é um pouco mais longo porém bem simples também, vamos adicionar o SwaggerUI a nosso app, primeiro buscamos no nosso service o nosso provider de versões e armazemos em uma variável para ser usado logo mais abaixo, após isso vamos dizer para o app usar o swagger e em último lugar faremos um laço de repetição dentro da configuração para usar o SwaggerUI, informando onde ele deve buscar os arquivos JSON que serão usados para renderizar cada versão. Uma pequena nota a respeito desse passo é que utilizamos o método .Reverse() dentro da definição do foreach isso serve para que a versão mais recente seja a prioritária ao abrir o swagger.
+O próximo passo é um pouco mais longo porém bem simples também, vamos adicionar o SwaggerUI a nosso app, primeiro buscamos no nosso service o nosso provider de versões e armazenamos em uma variável para ser usado logo mais abaixo, após isso vamos dizer para o app usar o swagger e em último lugar faremos um laço de repetição dentro da configuração para usar o SwaggerUI, informando onde ele deve buscar os arquivos JSON que serão usados para renderizar cada versão. Uma pequena nota a respeito desse passo é que utilizamos o método .Reverse() dentro da definição do foreach isso serve para que a versão mais recente seja a prioritária ao abrir o swagger.
+
+Depois de tudo configurado não podemos deixar de adicionar em nossa classe Program.cs essas configurações conforme abaixo:
+
+![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc-extra.png)
 
 Esse passo a passo foi um pouco mais longo, mas já estamos chegando no final do artigo, então vamos só mais um detalhe muito importante que é como documentar nossos métodos dentro das controllers.
 
 ### Documentando nossas controllers
 
-Existem duas formas de utilizar o pacote de versionamento das controllers, uma delas permite que façamos tudo dentro da mesma classe, mantendo ambas as versões disponíveis e temos que indicar método a método qual das duas versões atenderia, pode fazer sentido em certos cenários porém acho mais interessante usar a abordagem de segmentar em classes e pastas diferentes, assim ficamos com uma melhor organização e facilita o trabalho de refatoração quando necessário com classes mais concisas a estrutura que vamos usar de diretórios é conforme na imagem abaixo:
+Existem duas formas de utilizar o pacote de versionamento das controllers, uma delas permite que façamos tudo dentro da mesma classe, mantendo ambas as versões disponíveis e temos que indicar método a método qual das duas versões atenderia, pode fazer sentido em certos cenários, porém, acho mais interessante usar a abordagem de segmentar em classes e pastas diferentes, assim ficamos com uma melhor organização e facilita o trabalho de refatoração quando necessário com classes mais concisas a estrutura que vamos usar de diretórios é conforme na imagem abaixo:
 
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc14.png)
 
@@ -106,8 +110,8 @@ Dessa forma temos diretórios para cada versão de nossa API, após isso vamos o
 
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc15.png)
 
-Algumas coisas mantém com o que vemos na maioria dos tutoriais e cursos, anotar com o Authorize pra quando houver alguma ferramenta de antenticação, como o JWT, a rota com um pequeno detalhe sobre a versão que precisamos adotar quando estamos trabalhando com o pacote de versionamento, junto com a a anotação que define a versão da api e nesse caso definindo como depreciada e isso será usado na nossa classe de confiuguração mostrada anteriormente para adicionar um texto informativo tal qual para adicionar no header response das chamadas HTTP informando seu status.
-As anotações de Produces e Consumes são opcionais e também podem ser usadas método a método dependendo de sua necessidade, porém como padrão dessa nossa API trabalha apenas com entrada e saída de JSON, definindo no topo da classe ela se reflete em todos os métodos.
+Algumas coisas mantém com o que vemos na maioria dos tutoriais e cursos, anotar com o Authorize pra quando houver alguma ferramenta de antenticação, como o JWT, a rota com um pequeno detalhe sobre a versão que precisamos adotar quando estamos trabalhando com o pacote de versionamento, junto com a anotação que define a versão da api e nesse caso definindo como depreciada e isso será usado na nossa classe de configuração mostrada anteriormente para adicionar um texto informativo tal qual para adicionar no header response das chamadas HTTP informando seu status.
+As anotações de Produces e Consumes são opcionais e também podem ser usadas método a método dependendo de sua necessidade, contudo, como padrão dessa nossa API trabalha apenas com entrada e saída de JSON, definindo no topo da classe ela se reflete em todos os métodos.
 
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc16.png)
 
@@ -144,4 +148,6 @@ Vou deixar o exemplo dos outros métodos como referência, mas isso vai ser semp
 ![](https://raw.githubusercontent.com/Vinicius-92/swagger-example/main/Images/doc21.png)
 
 E com isso chegamos ao fim do que é uma forma muito boa de documentar nossas APIs, facilitando o consumo e atualização de nossos endpoints, lembrando que podemos fazer isso junto com uma abordagem de API first, pois não precisamos de nenhuma regra de negócio, apenas com os controllers e configurações já temos o swagger para disponibilizar para quem interessar.
-O código completo está nesse reposótirio do Github, se chegou até aqui muito obrigado!
+O código completo está nesse repositório do Github, se chegou até aqui muito obrigado!
+
+https://github.com/Vinicius-92/swagger-example

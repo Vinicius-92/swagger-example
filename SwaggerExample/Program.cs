@@ -9,11 +9,12 @@ builder.Services.AddEndpointsApiExplorer();
 
 // Adicionando classes de configuração de versionamento e Swagger personalizado
 builder.Services.ConfigureApiVersioning();
+
+
 builder.Services.SwaggerGen();
 
 var app = builder.Build();
 
-// Adicionando classe de configuração sagger Ui personalizada 
 app.SwaggerUi();
 
 app.UseHttpsRedirection();
